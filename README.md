@@ -1,7 +1,7 @@
 # linuxConfig
 ## Configuration of a linux server for non standard ssh login,
-Apache serving wsgi python flask application talking to a
-postgres sql database, oAuth2 with google identity management
+## Apache serving wsgi python flask application talking to a
+## postgres sql database, oAuth2 with google identity management
 
 
 ### Application is running at:
