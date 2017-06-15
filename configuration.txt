@@ -1,0 +1,264 @@
+linux server overview configuration: 
+
+LOGIN script: 
+lg2423@lmg-xps13:/mnt/c/Dropbox/work/nano/linuxConfig$ ./goAUbuntu.sh
+also 'sudo su root' to get to be root. 
+
+https://classroom.udacity.com/nanodegrees/nd004/parts/00413454014/modules/357367901175462/lessons/3573679011239847/project
+
+
+   98  sudo ufw default deny incoming
+   99  sudo ufw default allow outgoing
+  100  sudo ufw status
+  101  sudo ufw allow ssh
+  102  sudo ufw allow 2222/tcp
+  103  sudo ufw allow www
+  104  sudo ufw enable
+  105  sudo ufw status
+
+ubuntu@ip-172-26-5-122:/home$ sudo ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22                         ALLOW       Anywhere
+2222/tcp                   ALLOW       Anywhere
+80/tcp                     ALLOW       Anywhere
+22 (v6)                    ALLOW       Anywhere (v6)
+2222/tcp (v6)              ALLOW       Anywhere (v6)
+80/tcp (v6)                ALLOW       Anywhere (v6)
+
+added another rule based on rubric
+sudo ufw allow ntp
+
+sudo apt-get update
+sudo apt-get install apache2
+
+now have a web service at: 
+
+http://52.38.187.51
+
+This is a request to an external server that shows what your ip address looks like: 
+ubuntu@ip-172-26-5-122:/home$ curl http://icanhazip.com
+52.38.187.51
+
+for reference LAMP install: 
+https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-on-ubuntu-14-04
+Mail server including DNS install: 
+https://www.digitalocean.com/community/tutorials/how-to-run-your-own-mail-server-with-mail-in-a-box-on-ubuntu-14-04
+
+Postgress install: 
+https://classroom.udacity.com/nanodegrees/nd004/parts/00413454014/modules/357367901175461/lessons/4340119836/concepts/48089485480923
+
+sudo apt-get install postgresql
+
+i guess some os upgrades are needed so ran this: 
+sudo apt-get upgrade.
+sudo apt autoremove (removed snap-confine)
+
+sudo su root 
+vi /etc/ssh/sshd_config
+cp sshd_config sshd_config.bk
+change port number ssh listens on...
+also do this for no root login: 
+PermitRootLogin no 
+
+https://discussions.udacity.com/t/configuring-the-firewall-for-amazon-lightsail/222208/2
+change amazon firewall to allow connections on 123 also
+
+had to restart ssh daemon with: 
+sudo service sshd restart
+
+
+
+then can login on port 2222 
+
+eventually: 
+sudo ufw deny 22
+
+ubuntu@ip-172-26-5-122:~$ sudo ufw deny 22
+Rule updated
+Rule updated (v6)
+ubuntu@ip-172-26-5-122:~$ sudo ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+22                         DENY        Anywhere
+2222/tcp                   ALLOW       Anywhere
+80/tcp                     ALLOW       Anywhere
+123                        ALLOW       Anywhere
+222                        DENY        Anywhere
+22 (v6)                    DENY        Anywhere (v6)
+2222/tcp (v6)              ALLOW       Anywhere (v6)
+80/tcp (v6)                ALLOW       Anywhere (v6)
+123 (v6)                   ALLOW       Anywhere (v6)
+222 (v6)                   DENY        Anywhere (v6)
+
+
+need python module installed: pycopg2
+
+sudo su root 
+apt install python-pip
+pip install psycopg2  (requires above command first)
+(upgrade recommended upon use...) 
+pip install --upgrade pip 
+
+apache default dir: 
+root@ip-172-26-5-122:/var/www/html# vi index.html
+
+clone fullstack-nanodegree-vm
+cd /home/ubuntu/fullstack-nanodegree-vm/vagrant/catalog/FP
+
+needs sqlalchemy:
+sudo su root
+pip install sqlalchemy 
+pip install flask 
+pip install oauth2client 
+pip install requests 
+
+python database_setup.py 
+
+
+python finalproject.py 
+
+How to configure wsgi on ubuntu: 
+https://www.linode.com/docs/web-servers/apache/apache-and-modwsgi-on-ubuntu-14-04-precise-pangolin
+sudo apt-get update (recommended before wsgi install)
+sudo apt-get upgrade (0 changes required, already done) 
+apt-get install apache2 python-setuptools libapache2-mod-wsgi
+
+succcessful install and a the end, it told me to: apache2_invoke: Enable module wsgi
+
+/etc/apache2 
+vi apache2.conf - main configuration file
+
+the virtual hosts file is in the following subdirectory: 
+root@ip-172-26-5-122:/etc/apache2/sites-available# ls -lt
+total 12
+-rw-r--r-- 1 root root 6338 Apr  5  2016 default-ssl.conf
+-rw-r--r-- 1 root root 1332 Mar 19  2016 000-default.conf
+
+flask documentation says to add some lines to affect it 
+
+/var/www/html is apache root files
+
+ 
+/etc/init.d/apache2 restart
+errors can be checked with: 
+'systemctl status apache2.service'
+
+docs used: 
+http://www.jakowicz.com/flask-apache-wsgi/
+http://flask.pocoo.org/docs/0.12/deploying/mod_wsgi/
+https://www.linode.com/docs/web-servers/apache/apache-and-modwsgi-on-ubuntu-14-04-precise-pangolin
+http://modwsgi.readthedocs.io/en/develop/user-guides/configuration-guidelines.html
+
+logs in /var/log/apache2
+
+copy 
+/home/ubuntu/fullstack-nanodegree-vm/vagrant/catalog/FP/finalproject.py 
+
+
+db connect issue: 
+https://stackoverflow.com/questions/7670289/sqlite3-operationalerror-unable-to-open-database-file
+http://flask.pocoo.org/docs/0.10/patterns/sqlite3/
+https://discussions.udacity.com/t/operationalerror-sqlite3-operationalerror-unable-to-open-database-file/250007/2
+
+
+psql = errors with user as ubuntu
+su - postgres 
+then can connect wit psql 
+OR.... this works!
+sudo -u postgres psql 
+/
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://scott:tiger@localhost:5432/mydatabase')
+
+postgresql://user:password@localhost:5432/database_name
+
+https://help.ubuntu.com/community/PostgreSQL
+
+root@ip-172-26-5-122:/var/www/flask# sudo -u postgres psql postgres
+psql (9.5.7)
+Type "help" for help.
+
+postgres=# \password postgres
+Enter new password:
+Enter it again:
+(postgres1) 
+
+you need to create the db before you can use it with postgres unlike sqllite
+
+
+root@ip-172-26-5-122:/var/www/flask# sudo -u postgres psql
+psql (9.5.7)
+Type "help" for help.
+
+postgres=# CREATE DATABASE vitaminCatalog;
+CREATE DATABASE
+postgres=#
+
+root@ip-172-26-5-122:/var/www/flask# sudo -u postgres psql -l
+                                    List of databases
+      Name      |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+----------------+----------+----------+-------------+-------------+-----------------------
+ postgres       | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+ template0      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+                |          |          |             |             | postgres=CTc/postgres
+ template1      | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+                |          |          |             |             | postgres=CTc/postgres
+ vitamincatalog | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+(4 rows)
+
+seems not case sensitive. Changed to lower case and new connect string in both.
+
+database_setup.py:engine = create_engine('postgresql://postgres:postgres1@localhost:5432/vitamincatalog', echo=True)
+
+wsgi:error in logs... 
+
+postgres=# GRANT ALL ON DATABASE vitamincatalog TO postgres;
+GRANT
+postgres=#
+
+6/14 - 
+database is full of some junk
+google/facebook need to be authorized for IP address where site is running 
+
+
+https://www.pythonsheets.com/notes/python-sqlalchemy.html
+created some new scripts to delete tables for updating
+
+ran into issue with open sessions on the db so stopped psql with: 
+sudo service postgresql restart
+
+sudo -u postgres psql 
+
+root@ip-172-26-5-122:/var/www/flask# sudo -u postgres psql vitamincatalog
+psql (9.5.7)
+Type "help" for help.
+
+vitamincatalog=#
+
+
+vitamincatalog=# \d
+                List of relations
+ Schema |       Name        |   Type   |  Owner
+--------+-------------------+----------+----------
+ public | foodSource        | table    | postgres
+ public | foodSource_id_seq | sequence | postgres
+ public | user              | table    | postgres
+ public | user_id_seq       | sequence | postgres
+ public | vitamin           | table    | postgres
+ public | vitamin_id_seq    | sequence | postgres
+(6 rows)
+
+
+
+postgres=# DROP DATABASE vitamincatalog;
+DROP DATABASE
+postgres=# CREATE DATABASE vitamincatalog;
+CREATE DATABASE
+postgres=# GRANT ALL ON DATABASE vitamincatalog TO postgres;
+GRANT
+postgres=#
